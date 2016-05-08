@@ -1,0 +1,35 @@
+<html>
+  <body>
+     <form id="form">
+       <input type="text" id="input" value="send a message"></input>
+     </form>
+     <div id="msgs"></div>
+  </body>
+
+  <script type="text/javascript">
+    window.onload = function(){
+      (function(){
+        var show = function(el){
+          return function(msg){ el.innerHTML = msg + '<br />' + el.innerHTML; }
+        }(document.getElementById('msgs'));
+
+        var protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+
+        var ws       = new WebSocket(protocol + '://' + window.location.host + window.location.pathname);
+        ws.onopen    = function()  { show(protocol + '://' + window.location.host + window.location.pathname); };
+        ws.onclose   = function()  { show('websocket closed'); }
+        ws.onmessage = function(m) { show('websocket message: ' +  m.data); };
+
+        var sender = function(f){
+          var input     = document.getElementById('input');
+          input.onclick = function(){ input.value = "" };
+          f.onsubmit    = function(){
+            ws.send(input.value);
+            input.value = "";
+            return false;
+          }
+        }(document.getElementById('form'));
+      })();
+    }
+  </script>
+</html>
