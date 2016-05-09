@@ -14,7 +14,7 @@ Thread.new do # trivial example work thread
   while true do
     sleep 1
     $sum += 1
-    EM.next_tick { settings.sockets.each{|s| s.send("Sum: #{$sum}") } }
+    #EM.next_tick { settings.sockets.each{|s| s.send("Sum: #{$sum}") } }
   end
 end
 
@@ -26,7 +26,7 @@ get '/' do
       settings.sockets << ws
     end
     ws.onmessage do |msg|
-      EM.next_tick { settings.sockets.each{|s| s.send(msg+$sum.to_s) } }
+      EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
     end
     ws.onclose do
       settings.sockets.delete(ws)
