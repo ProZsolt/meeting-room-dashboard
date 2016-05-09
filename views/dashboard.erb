@@ -1,0 +1,21 @@
+<h2><%= @ws_json[:room_name]%></h2>
+<br>
+<%= @ws_json[:current_event][:name]%>
+<br>
+<% until_next = ((@ws_json[:current_event][:end] - DateTime.now)*24*60).to_i%>
+For
+<%=until_next/60%>
+ hours
+<%=until_next%60%>
+ minutes
+<br><br>
+Upcoming meetings today:
+<br>
+<% @ws_json[:next_events].each do |event| %>
+  <%= event[:start].strftime('%R')  %>
+  <%= '-' %>
+  <%= event[:end].strftime('%R')  %>
+  <%= ' ' %>
+  <%= event[:name] %>
+  <br>
+<% end %>
