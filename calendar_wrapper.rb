@@ -3,8 +3,12 @@ require 'google/api_client'
 require 'google/api_client/client_secrets'
 require 'google/api_client/auth/file_storage'
 require 'sinatra'
+require 'sinatra-websocket'
 require 'logger'
 require 'json'
+
+set :server, 'thin'
+set :sockets, []
 
 enable :sessions
 
@@ -89,7 +93,7 @@ end
 
 def get_events
   current_time = DateTime.now
-  day_end = (Date.today+1)
+  day_end = (Date.today+2)
   g_events = api_client.execute(:api_method => calendar_api.events.list,
                               :parameters => {'calendarId' => 'cheppers.com_2d32353038373534353337@resource.calendar.google.com',
                                               'timeMin' => current_time.rfc3339,
@@ -103,12 +107,12 @@ def get_events
   next_events = g_events['items'].map do |e|
     {
       name: e['summary'],
-      start: DateTime.rfc3339(e['start']['dateTime']),
-      end: DateTime.rfc3339(e['end']['dateTime'])
+      start: e['start']['dateTime'],
+      end: e['end']['dateTime']
     }
   end
   current_event = nil
-  if next_events.first[:start] > current_time
+  if DateTime.rfc3339(next_events.first[:start]) > current_time
     current_event = {
       name: 'Available',
       end: next_events.first[:start]
@@ -117,12 +121,23 @@ def get_events
     current_event = next_events.shift
   end
   calendar_name = g_events['summary']
-  {room_name: calendar_name, current_event: current_event, next_events: next_events}
+  {room_name: calendar_name, current_event: current_event, next_events: next_events}.to_json
 end
 
 get '/' do
-  @ws_json = get_events
-  erb :dashboard
+  return erb :dashboard unless request.websocket?
+  request.websocket do |ws|
+    ws.onopen do
+      settings.sockets << ws
+      EM.next_tick{ ws.send(get_events) }
+    end
+    ws.onmessage do |msg|
+
+    end
+    ws.onclose do
+      settings.sockets.delete(ws)
+    end
+  end
 end
 
 get '/calendars' do

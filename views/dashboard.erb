@@ -1,21 +1,17 @@
-<h2><%= @ws_json[:room_name]%></h2>
-<br/>
-<%= @ws_json[:current_event][:name]%>
-<br/>
-<% until_next = ((@ws_json[:current_event][:end] - DateTime.now)*24*60).to_i%>
-For
-<%=until_next/60%>
- hours
-<%=until_next%60%>
- minutes
-<br/><br/>
-Upcoming meetings today:
-<br/>
-<% @ws_json[:next_events].each do |event| %>
-  <%= event[:start].strftime('%R')  %>
-  <%= '-' %>
-  <%= event[:end].strftime('%R')  %>
-  <%= ' ' %>
-  <%= event[:name] %>
-  <br/>
-<% end %>
+<html>
+  <head>
+    <script type="text/javascript" src="dashboard.js"></script>
+  </head>
+  <body onload="webSocketSetup(); update(); setInterval('update()', 1000 )">
+    <h2><div id="room_name">&nbsp;</div></h2>
+    <br/>
+    <div id="clock">&nbsp;</div>
+    <br/>
+    <div id="current_event">&nbsp;</div>
+    <br/>
+    <div id="remaining">&nbsp;</div>
+    <br/><br/>
+    Upcoming meetings today:
+    <br/>
+    <div id="next_events">&nbsp;</div>
+  </body>
