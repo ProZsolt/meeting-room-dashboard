@@ -87,7 +87,7 @@ get '/oauth2callback' do
   redirect to('/')
 end
 
-get '/' do
+def get_events
   current_time = DateTime.now
   day_end = (Date.today+1)
   g_events = api_client.execute(:api_method => calendar_api.events.list,
@@ -117,7 +117,11 @@ get '/' do
     current_event = next_events.shift
   end
   calendar_name = g_events['summary']
-  @ws_json = {room_name: calendar_name, current_event: current_event, next_events: next_events}
+  {room_name: calendar_name, current_event: current_event, next_events: next_events}
+end
+
+get '/' do
+  @ws_json = get_events
   erb :dashboard
 end
 
