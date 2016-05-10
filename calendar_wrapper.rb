@@ -132,6 +132,11 @@ get '/' do
   end
 end
 
+get '/refresh' do
+  events = get_events
+  EM.next_tick{ settings.sockets.each{|s| s.send(events) } }
+end
+
 get '/calendars' do
   # Fetch list of events on the user's default calandar
   result = api_client.execute(:api_method => calendar_api.calendar_list.list,

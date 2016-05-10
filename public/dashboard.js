@@ -1,35 +1,36 @@
-var json;
-var roomName;
-var currentEvent;
-var nextEvents;
+var json = "";
 
 function update(){
-  updateClock()
-  updateRoomName();
-  updateEvents();
-  updateCurrentEvent();
-  updateNextEvents()
+  updateClock();
+  if(json != ""){
+    updateEvents();
+  }
 }
 
 function updateEvents(){
-  roomName = json["room_name"];
   var now = new Date();
   var events = json["events"];
-  console.log(events);
-  for (i = 0; parseGoogleDate(events[i]["end"]) < now; i++){
-    events.shift;
+  for (var i = 0; i < events.length && parseGoogleDate(events[i]["end"]) < now; i++){
+    events.shift();
   }
   console.log(events);
-  if (parseGoogleDate(events[0]["start"]) < now){
-    currentEvent = events.shift();
-  } else{
-    currentEvent = {"name": "Available", "end": events[0]["start"]};
+  if(events.length == 0){
+    console.log("if 1");
+    updateCurrentEvent({"name": "Available", "end": "nil"});
+    updateNextEvents([]);
+  }else if(parseGoogleDate(events[0]["start"]) < now){
+    console.log("if 2");
+    updateCurrentEvent(events[0]);
+    updateNextEvents(events.slice(1, events.length));
+  }else{
+    console.log("if 3");
+    updateCurrentEvent({"name": "Available", "end": events[0]["start"]});
+    updateNextEvents(events);
   }
-  nextEvents = events;
 }
 
-function updateRoomName(){
-  document.getElementById("room_name").firstChild.nodeValue = roomName;
+function updateRoomName(roomName){
+  document.getElementById("room_name").innerHTML = roomName;
 }
 
 function parseGoogleDate(d) {
@@ -59,7 +60,7 @@ function timeStringFromDateTime(dateTime){
   return hours + ":" + minutes + ":" + seconds;
 }
 
-function updateNextEvents(){
+function updateNextEvents(nextEvents){
   var string = "";
   nextEvents.forEach(function(event) {
     var name = event["name"];
@@ -71,47 +72,53 @@ function updateNextEvents(){
       + timeStringFromDateTime(end)
       + " "
       + name
-      + "<br/>";
+      + "<br>";
   });
-  document.getElementById("next_events").firstChild.nodeValue = string;
+  document.getElementById("next_events").innerHTML = string;
 }
 
-function updateCurrentEvent(){
-  document.getElementById("current_event").firstChild.nodeValue = currentEvent["name"];
-  start = new Date();
-  end = parseGoogleDate(currentEvent["end"]);
-  remaining = end - start;
-  hours = Math.floor(remaining / 3600000);
-  mins = Math.floor((remaining % 3600000) / 60000);
-  remainingString = "For"
+function updateCurrentEvent(currentEvent){
+  document.getElementById("current_event").innerHTML = currentEvent["name"];
+  var remainingString = "For";
 
-  if (remaining < 60000){
-    remainingString = remainingString + " less than a min"
-  }
-  else {
-    if (hours == 1){
-      remainingString = remainingString + " 1 hour"
-    } else if (hours > 1) {
-      remainingString = remainingString + " " + hours + " hours"
-    }
+  if (currentEvent["end"] == "nil"){
+    remainingString = remainingString + "the rest of the day";
+  } else{
+    var start = new Date();
+    var end = parseGoogleDate(currentEvent["end"]);
+    var remaining = end - start;
+    var hours = Math.floor(remaining / 3600000);
+    var mins = Math.floor((remaining % 3600000) / 60000);
 
-    if (mins == 1){
-      remainingString = remainingString + " 1 min"
-    } else if (mins > 1) {
-      remainingString = remainingString + " " + mins + " mins"
+    if (remaining < 60000){
+      remainingString = remainingString + " less than a min";
+    }
+    else {
+      if (hours == 1){
+        remainingString = remainingString + " 1 hour";
+      } else if (hours > 1) {
+        remainingString = remainingString + " " + hours + " hours";
+      }
+
+      if (mins == 1){
+        remainingString = remainingString + " 1 min";
+      } else if (mins > 1) {
+        remainingString = remainingString + " " + mins + " mins";
+      }
     }
   }
-  remainingString = remainingString + "."
-  document.getElementById("remaining").firstChild.nodeValue = remainingString;
+  remainingString = remainingString + ".";
+  document.getElementById("remaining").innerHTML = remainingString;
 }
 
 function webSocketSetup(){
   function onMessage(data){
     json = JSON.parse(data);
-    update();
+    updateRoomName(json["room_name"]);
+    updateEvents();
   }
 
-  var protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+  var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
 
   var ws       = new WebSocket(protocol + '://' + window.location.host + window.location.pathname);
   ws.onopen    = function(){};
@@ -121,5 +128,5 @@ function webSocketSetup(){
 
 function updateClock(){
   var currentTime = new Date();
-  document.getElementById("clock").firstChild.nodeValue = timeStringFromDateTime(currentTime);
+  document.getElementById("clock").innerHTML = timeStringFromDateTime(currentTime);
 }
