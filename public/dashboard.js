@@ -1,5 +1,11 @@
+
+var json;
+
 function update(){
   updateClock()
+  updateRoomName(json["room_name"]);
+  updateEvents(json["next_events"]);
+  updateCurrent(json["current_event"]);
 }
 
 function updateRoomName(name){
@@ -55,35 +61,33 @@ function updateCurrent(event){
   remaining = end - start;
   hours = Math.floor(remaining / 3600000);
   mins = Math.floor((remaining % 3600000) / 60000);
-  remainingString = "For "
+  remainingString = "For"
 
   if (remaining < 60000){
-    remainingString = remainingString + "less than a min."
+    remainingString = remainingString + " less than a min"
   }
   else {
     if (hours == 1){
-      remainingString = remainingString + "1 hour "
+      remainingString = remainingString + " 1 hour"
     } else if (hours > 1) {
-      remainingString = remainingString + hours + " hours "
+      remainingString = remainingString + " " + hours + " hours"
     }
 
     if (mins == 1){
-      remainingString = remainingString + "1 min."
-    } else if (hours > 1) {
-      remainingString = remainingString + mins + " mins."
+      remainingString = remainingString + " 1 min"
+    } else if (mins > 1) {
+      remainingString = remainingString + " " + mins + " mins"
     }
   }
-  remainingString =  + hours + " hours " + mins + " mins"
+  remainingString = remainingString + "."
   document.getElementById("remaining").firstChild.nodeValue = remainingString;
 }
 
 function webSocketSetup(){
   function onMessage(data){
-    var json = JSON.parse(data);
+    json = JSON.parse(data);
     console.log(json);
-    updateRoomName(json["room_name"]);
-    updateEvents(json["next_events"]);
-    updateCurrent(json["current_event"]);
+    update();
   }
 
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws'
