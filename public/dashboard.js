@@ -78,7 +78,7 @@ function updateCurrentEvent(currentEvent){
   var remainingString = "For";
 
   if (currentEvent["end"] == "nil"){
-    remainingString = remainingString + "the rest of the day";
+    remainingString = remainingString + " the rest of the day";
   } else{
     var start = new Date();
     var end = parseGoogleDate(currentEvent["end"]);
