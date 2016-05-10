@@ -1,15 +1,35 @@
-
 var json;
+var roomName;
+var currentEvent;
+var nextEvents;
 
 function update(){
   updateClock()
-  updateRoomName(json["room_name"]);
-  updateEvents(json["next_events"]);
-  updateCurrent(json["current_event"]);
+  updateRoomName();
+  updateEvents();
+  updateCurrentEvent();
+  updateNextEvents()
 }
 
-function updateRoomName(name){
-  document.getElementById("room_name").firstChild.nodeValue = name;
+function updateEvents(){
+  roomName = json["room_name"];
+  var now = new Date();
+  var events = json["events"];
+  console.log(events);
+  for (i = 0; parseGoogleDate(events[i]["end"]) < now; i++){
+    events.shift;
+  }
+  console.log(events);
+  if (parseGoogleDate(events[0]["start"]) < now){
+    currentEvent = events.shift();
+  } else{
+    currentEvent = {"name": "Available", "end": events[0]["start"]};
+  }
+  nextEvents = events;
+}
+
+function updateRoomName(){
+  document.getElementById("room_name").firstChild.nodeValue = roomName;
 }
 
 function parseGoogleDate(d) {
@@ -27,6 +47,7 @@ function parseGoogleDate(d) {
 
   return new Date(year, month - 1, day, hour, minute - tzOffset, second);
 }
+
 function timeStringFromDateTime(dateTime){
   var hours = dateTime.getHours();
   var minutes = dateTime.getMinutes();
@@ -38,12 +59,12 @@ function timeStringFromDateTime(dateTime){
   return hours + ":" + minutes + ":" + seconds;
 }
 
-function updateEvents(events){
+function updateNextEvents(){
   var string = "";
-  events.forEach(function(event) {
-    name = event["name"];
-    start = parseGoogleDate(event["start"]);
-    end = parseGoogleDate(event["end"]);
+  nextEvents.forEach(function(event) {
+    var name = event["name"];
+    var start = parseGoogleDate(event["start"]);
+    var end = parseGoogleDate(event["end"]);
     string = string
       + timeStringFromDateTime(start)
       + " - "
@@ -54,10 +75,11 @@ function updateEvents(events){
   });
   document.getElementById("next_events").firstChild.nodeValue = string;
 }
-function updateCurrent(event){
-  document.getElementById("current_event").firstChild.nodeValue = event["name"];
+
+function updateCurrentEvent(){
+  document.getElementById("current_event").firstChild.nodeValue = currentEvent["name"];
   start = new Date();
-  end = parseGoogleDate(event["end"]);
+  end = parseGoogleDate(currentEvent["end"]);
   remaining = end - start;
   hours = Math.floor(remaining / 3600000);
   mins = Math.floor((remaining % 3600000) / 60000);
@@ -86,7 +108,6 @@ function updateCurrent(event){
 function webSocketSetup(){
   function onMessage(data){
     json = JSON.parse(data);
-    console.log(json);
     update();
   }
 

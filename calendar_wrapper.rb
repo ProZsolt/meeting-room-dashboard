@@ -92,36 +92,28 @@ get '/oauth2callback' do
 end
 
 def get_events
-  current_time = DateTime.now
-  day_end = (Date.today+2)
+  day_start = (Date.today)
+  day_end = (Date.today+1)
   g_events = api_client.execute(:api_method => calendar_api.events.list,
                               :parameters => {'calendarId' => 'cheppers.com_2d32353038373534353337@resource.calendar.google.com',
-                                              'timeMin' => current_time.rfc3339,
+                                              'timeMin' => day_start.rfc3339,
                                               'timeMax' => day_end.rfc3339,
                                               'timeZone' => 'Europe/Budapest',
                                               'singleEvents' => true,
                                               'orderBy' => 'startTime'
                                               },
                               :authorization => user_credentials)
+
   g_events = JSON.parse(g_events.data.to_json)
-  next_events = g_events['items'].map do |e|
+  events = g_events['items'].map do |e|
     {
       name: e['summary'],
       start: e['start']['dateTime'],
       end: e['end']['dateTime']
     }
   end
-  current_event = nil
-  if DateTime.rfc3339(next_events.first[:start]) > current_time
-    current_event = {
-      name: 'Available',
-      end: next_events.first[:start]
-    }
-  else
-    current_event = next_events.shift
-  end
   calendar_name = g_events['summary']
-  {room_name: calendar_name, current_event: current_event, next_events: next_events}.to_json
+  {room_name: calendar_name, events: events}.to_json
 end
 
 get '/' do
