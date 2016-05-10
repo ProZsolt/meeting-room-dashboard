@@ -10,20 +10,16 @@ function update(){
 function updateEvents(){
   var now = new Date();
   var events = json["events"];
-  for (var i = 0; i < events.length && parseGoogleDate(events[i]["end"]) < now; i++){
+  while (events.length > 0 && parseGoogleDate(events[0]["end"]) < now){
     events.shift();
   }
-  console.log(events);
   if(events.length == 0){
-    console.log("if 1");
     updateCurrentEvent({"name": "Available", "end": "nil"});
     updateNextEvents([]);
   }else if(parseGoogleDate(events[0]["start"]) < now){
-    console.log("if 2");
     updateCurrentEvent(events[0]);
     updateNextEvents(events.slice(1, events.length));
   }else{
-    console.log("if 3");
     updateCurrentEvent({"name": "Available", "end": events[0]["start"]});
     updateNextEvents(events);
   }
