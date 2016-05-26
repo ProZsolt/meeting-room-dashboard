@@ -91,11 +91,11 @@ get '/oauth2callback' do
   redirect to('/')
 end
 
-def get_events
+def get_events(calendar_id)
   day_start = (Date.today)
   day_end = (Date.today+1)
   g_events = api_client.execute(:api_method => calendar_api.events.list,
-                              :parameters => {'calendarId' => 'cheppers.com_2d32353038373534353337@resource.calendar.google.com',
+                              :parameters => {'calendarId' => calendar_id,
                                               'timeMin' => day_start.rfc3339,
                                               'timeMax' => day_end.rfc3339,
                                               'timeZone' => 'Europe/Budapest',
@@ -121,7 +121,7 @@ get '/' do
   request.websocket do |ws|
     ws.onopen do
       settings.sockets << ws
-      EM.next_tick{ ws.send(get_events) }
+      EM.next_tick{ ws.send(get_events('cheppers.com_2d32353038373534353337@resource.calendar.google.com')) }
     end
     ws.onmessage do |msg|
 
@@ -133,7 +133,7 @@ get '/' do
 end
 
 get '/refresh' do
-  events = get_events
+  events = get_events('cheppers.com_2d32353038373534353337@resource.calendar.google.com')
   EM.next_tick{ settings.sockets.each{|s| s.send(events) } }
 end
 
