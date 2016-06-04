@@ -122,12 +122,15 @@ function webSocketSetup(){
   ws.onmessage = function(message){onMessage(message.data);};
 
   var sender = function(f){
-    var input     = document.getElementById('input');
-    f.onsubmit    = function(){
-      ws.send(input.value);
+    f.onclick    = function(){
+      ws.send(f.getAttribute("data-duration"));
       return false;
     }
-  }(document.getElementById('form'));
+  };
+  sender(document.getElementById('button_1'))
+  sender(document.getElementById('button_2'))
+  sender(document.getElementById('button_3'))
+  sender(document.getElementById('button_4'))
 }
 
 function updateClock(){
