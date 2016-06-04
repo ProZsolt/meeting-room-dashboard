@@ -94,12 +94,12 @@ def get_events(calendar_id)
   {room_name: calendar_name, events: events}.to_json
 end
 
-get '/calendar' do
+get '/calendar/:calendar_id' do |calendar_id|
   return erb :dashboard unless request.websocket?
   request.websocket do |ws|
     ws.onopen do
       settings.sockets << ws
-      EM.next_tick{ ws.send(get_events('cheppers.com_2d32353038373534353337@resource.calendar.google.com')) }
+      EM.next_tick{ ws.send(get_events(calendar_id)) }
     end
     ws.onmessage do |msg|
 
@@ -110,8 +110,8 @@ get '/calendar' do
   end
 end
 
-get '/refresh' do
-  events = get_events('cheppers.com_2d32353038373534353337@resource.calendar.google.com')
+get '/refresh/:calendar_id' do |calendar_id|
+  events = get_events(calendar_id)
   EM.next_tick{ settings.sockets.each{|s| s.send(events) } }
 end
 
