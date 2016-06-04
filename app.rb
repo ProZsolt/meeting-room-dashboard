@@ -94,6 +94,23 @@ def get_events(calendar_id)
   {room_name: calendar_name, events: events}.to_json
 end
 
+def create_event(calendar_id, duration)
+  event_start = DateTime.now
+  calendar = Google::Apis::CalendarV3::CalendarService.new
+  calendar.authorization = credentials_for(Google::Apis::CalendarV3::AUTH_CALENDAR)
+  event = {
+     summary: 'Ad hoc Meeting',
+     attendees: [{email: calendar_id}],
+     start: {
+       date_time: event_start.rfc3339
+     },
+     end: {
+       date_time: (event_start + duration / 1440.0).rfc3339
+     }
+  }
+  calendar.insert_event('primary', event, send_notifications: false)
+end
+
 get '/calendar/:calendar_id' do |calendar_id|
   return erb :dashboard unless request.websocket?
   request.websocket do |ws|
@@ -102,7 +119,8 @@ get '/calendar/:calendar_id' do |calendar_id|
       EM.next_tick{ ws.send(get_events(calendar_id)) }
     end
     ws.onmessage do |msg|
-
+      create_event(calendar_id, msg.to_i)
+      EM.next_tick{ ws.send(get_events(calendar_id)) } # @todo remove this after the update hook is done
     end
     ws.onclose do
       settings.sockets.delete(ws)

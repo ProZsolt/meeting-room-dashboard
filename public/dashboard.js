@@ -120,6 +120,14 @@ function webSocketSetup(){
   ws.onopen    = function(){};
   ws.onclose   = function(){};
   ws.onmessage = function(message){onMessage(message.data);};
+
+  var sender = function(f){
+    var input     = document.getElementById('input');
+    f.onsubmit    = function(){
+      ws.send(input.value);
+      return false;
+    }
+  }(document.getElementById('form'));
 }
 
 function updateClock(){
