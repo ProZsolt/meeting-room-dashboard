@@ -4,6 +4,7 @@ require 'sinatra-websocket'
 require 'googleauth'
 require 'googleauth/stores/redis_token_store'
 require 'google/apis/calendar_v3'
+require 'google/apis/admin_directory_v1'
 require 'google-id-token'
 require 'dotenv'
 require 'json'
@@ -40,15 +41,14 @@ helpers do
     end
     credentials
   end
+end
 
-  def resize(url, width)
-    url.sub(/s220/, sprintf('s%d', width))
-  end
+before do
+  @client_id = settings.client_id.id
 end
 
 # Home page
 get('/') do
-  @client_id = settings.client_id.id
   erb :home
 end
 
@@ -83,7 +83,6 @@ def get_events(calendar_id)
                                  time_max: day_end.rfc3339,
                                  time_zone: 'Europe/Budapest',
                                  fields: 'items(summary,start,end),summary')
-  p g_events
   events = g_events.items.map do |event|
     {
       name: event.summary,
@@ -109,6 +108,18 @@ get '/calendar' do
       settings.sockets.delete(ws)
     end
   end
+end
+
+get '/refresh' do
+  events = get_events('cheppers.com_2d32353038373534353337@resource.calendar.google.com')
+  EM.next_tick{ settings.sockets.each{|s| s.send(events) } }
+end
+
+get '/resources' do
+  direcrory = Google::Apis::AdminDirectoryV1::DirectoryService.new
+  direcrory.authorization = credentials_for(Google::Apis::AdminDirectoryV1::AUTH_ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY)
+  @resources = direcrory.list_calendar_resources('my_customer')
+  erb :resources
 end
 
 # Callback for authorization requests. This saves the autorization code and
