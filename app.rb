@@ -12,7 +12,7 @@ require 'json'
 LOGIN_URL = '/'
 
 set :server, 'thin'
-set :sockets, []
+set :sockets, Hash.new([])
 
 configure do
   Dotenv.load
@@ -115,7 +115,7 @@ get '/calendar/:calendar_id' do |calendar_id|
   return erb :dashboard unless request.websocket?
   request.websocket do |ws|
     ws.onopen do
-      settings.sockets << ws
+      settings.sockets[calendar_id] += [ws]
       EM.next_tick{ ws.send(get_events(calendar_id)) }
     end
     ws.onmessage do |msg|
@@ -123,14 +123,14 @@ get '/calendar/:calendar_id' do |calendar_id|
       EM.next_tick{ ws.send(get_events(calendar_id)) } # @todo remove this after the update hook is done
     end
     ws.onclose do
-      settings.sockets.delete(ws)
+      settings.sockets[calendar_id].delete(ws)
     end
   end
 end
 
 get '/refresh/:calendar_id' do |calendar_id|
   events = get_events(calendar_id)
-  EM.next_tick{ settings.sockets.each{|s| s.send(events) } }
+  EM.next_tick{ settings.sockets[calendar_id].each{|s| s.send(events)} }
 end
 
 get '/resources' do
