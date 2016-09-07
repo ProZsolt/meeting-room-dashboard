@@ -1,8 +1,9 @@
 <html>
   <head>
     <script type="text/javascript" src="../dashboard.js"></script>
+    <script type="text/javascript" src="../screenfull.js"></script>
   </head>
-  <body onload="webSocketSetup(); setInterval('update()', 1000 )">
+  <body onload="pageSetup(); setInterval('update()', 1000 )">
     <h2><div id="room_name">&nbsp;</div></h2>
     <br/>
     <div id="clock">&nbsp;</div>
@@ -19,4 +20,6 @@
     <input type="button" value="20 minutes" data-duration="20" id="button_2">
     <input type="button" value="30 minutes" data-duration="30" id="button_3">
     <input type="button" value="1 hour" data-duration="60" id="button_4">
+    <br/>
+    <input type="button" value="Full screen" id="button_5">
   </body>

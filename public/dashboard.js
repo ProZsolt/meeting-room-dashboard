@@ -131,6 +131,27 @@ function webSocketSetup(){
   sender(document.getElementById('button_2'))
   sender(document.getElementById('button_3'))
   sender(document.getElementById('button_4'))
+
+}
+
+function pageSetup(){
+  webSocketSetup()
+
+  if (screenfull.enabled) {
+    document.getElementById('button_5').addEventListener('click', () => {
+      screenfull.request()
+    });
+
+    document.addEventListener(screenfull.raw.fullscreenchange, fullscreenChange);
+  }
+}
+
+function fullscreenChange() {
+  if(screenfull.isFullscreen) {
+    document.getElementById('button_5').style.visibility = 'hidden';
+  } else {
+    document.getElementById('button_5').style.visibility = 'visible';
+  }
 }
 
 function updateClock(){
