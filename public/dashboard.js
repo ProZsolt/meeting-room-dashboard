@@ -138,7 +138,7 @@ function pageSetup(){
   webSocketSetup()
 
   if (screenfull.enabled) {
-    document.getElementById('button_5').addEventListener('click', () => {
+    document.getElementById('full-screen').addEventListener('click', () => {
       screenfull.request()
     });
 
@@ -148,9 +148,9 @@ function pageSetup(){
 
 function fullscreenChange() {
   if(screenfull.isFullscreen) {
-    document.getElementById('button_5').style.visibility = 'hidden';
+    document.getElementById('full-screen').style.visibility = 'hidden';
   } else {
-    document.getElementById('button_5').style.visibility = 'visible';
+    document.getElementById('full-screen').style.visibility = 'visible';
   }
 }
 

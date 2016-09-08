@@ -2,9 +2,14 @@
   <head>
     <script type="text/javascript" src="../dashboard.js"></script>
     <script type="text/javascript" src="../screenfull.js"></script>
+    <link rel="stylesheet" type="text/css" href="../dashboard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.cyan-light_blue.min.css">
+    <script src="https://code.getmdl.io/1.2.0/material.min.js"></script>
   </head>
   <body onload="pageSetup(); setInterval('update()', 1000 )">
-    <h2><div id="room_name">&nbsp;</div></h2>
+    <h1><div id="room_name">&nbsp;</div></h1>
     <br/>
     <div id="clock">&nbsp;</div>
     <br/>
@@ -21,5 +26,5 @@
     <input type="button" value="30 minutes" data-duration="30" id="button_3">
     <input type="button" value="1 hour" data-duration="60" id="button_4">
     <br/>
-    <input type="button" value="Full screen" id="button_5">
+    <button id="full-screen" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"><i class="material-icons">launch</i></button>
   </body>
