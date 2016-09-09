@@ -51,9 +51,9 @@ function timeStringFromDateTime(dateTime){
   var seconds = dateTime.getSeconds();
 
   minutes = (minutes < 10 ? "0" : "") + minutes;
-  seconds = (seconds < 10 ? "0" : "") + seconds;
+  //seconds = (seconds < 10 ? "0" : "") + seconds;
 
-  return hours + ":" + minutes + ":" + seconds;
+  return hours + ":" + minutes;// + ":" + seconds;
 }
 
 function updateNextEvents(nextEvents){
@@ -66,7 +66,7 @@ function updateNextEvents(nextEvents){
       + timeStringFromDateTime(start)
       + " - "
       + timeStringFromDateTime(end)
-      + " "
+      + "<br>"
       + name
       + "<br>";
   });
@@ -121,16 +121,16 @@ function webSocketSetup(){
   ws.onclose   = function(){};
   ws.onmessage = function(message){onMessage(message.data);};
 
-  var sender = function(f){
-    f.onclick    = function(){
-      ws.send(f.getAttribute("data-duration"));
-      return false;
-    }
-  };
-  sender(document.getElementById('button_1'))
-  sender(document.getElementById('button_2'))
-  sender(document.getElementById('button_3'))
-  sender(document.getElementById('button_4'))
+  // var sender = function(f){
+  //   f.onclick    = function(){
+  //     ws.send(f.getAttribute("data-duration"));
+  //     return false;
+  //   }
+  // };
+  // sender(document.getElementById('button_1'))
+  // sender(document.getElementById('button_2'))
+  // sender(document.getElementById('button_3'))
+  // sender(document.getElementById('button_4'))
 
 }
 

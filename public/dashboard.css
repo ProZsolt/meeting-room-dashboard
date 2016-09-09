@@ -1,9 +1,3 @@
-body { font-size: 2.5vw; }
-
-#room_name {
-  font-size: 6vw;
-}
-
 #full-screen {
   position: fixed;
   display: block;

@@ -111,7 +111,14 @@ def create_event(calendar_id, duration)
   calendar.insert_event('primary', event, send_notifications: false)
 end
 
+def get_resources
+  direcrory = Google::Apis::AdminDirectoryV1::DirectoryService.new
+  direcrory.authorization = credentials_for(Google::Apis::AdminDirectoryV1::AUTH_ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY)
+  direcrory.list_calendar_resources('my_customer')
+end
+
 get '/calendar/:calendar_id' do |calendar_id|
+  @resources = get_resources
   return erb :dashboard unless request.websocket?
   request.websocket do |ws|
     ws.onopen do
@@ -134,10 +141,8 @@ get '/refresh/:calendar_id' do |calendar_id|
 end
 
 get '/resources' do
-  direcrory = Google::Apis::AdminDirectoryV1::DirectoryService.new
-  direcrory.authorization = credentials_for(Google::Apis::AdminDirectoryV1::AUTH_ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY)
-  @resources = direcrory.list_calendar_resources('my_customer')
-  erb :resources
+  @resources = get_resources
+  erb :dashboard
 end
 
 # Callback for authorization requests. This saves the autorization code and

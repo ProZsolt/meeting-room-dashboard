@@ -1,30 +1,53 @@
-<html>
+<!doctype html>
+<html lang="en">
   <head>
-    <script type="text/javascript" src="../dashboard.js"></script>
-    <script type="text/javascript" src="../screenfull.js"></script>
-    <link rel="stylesheet" type="text/css" href="../dashboard.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Meeting Room Dashboard</title>
+
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.cyan-light_blue.min.css">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.blue-red.min.css">
+    <link rel="stylesheet" type="text/css" href="../dashboard.css">
     <script src="https://code.getmdl.io/1.2.0/material.min.js"></script>
+    <script type="text/javascript" src="../screenfull.js"></script>
+    <script type="text/javascript" src="../dashboard.js"></script>
   </head>
   <body onload="pageSetup(); setInterval('update()', 1000 )">
-    <h1><div id="room_name">&nbsp;</div></h1>
-    <br/>
-    <div id="clock">&nbsp;</div>
-    <br/>
-    <div id="current_event">&nbsp;</div>
-    <br/>
-    <div id="remaining">&nbsp;</div>
-    <br/><br/>
-    Upcoming meetings today:
-    <br/>
-    <div id="next_events">&nbsp;</div>
-    <br/>
-    <input type="button" value="10 minutes" data-duration="10" id="button_1">
-    <input type="button" value="20 minutes" data-duration="20" id="button_2">
-    <input type="button" value="30 minutes" data-duration="30" id="button_3">
-    <input type="button" value="1 hour" data-duration="60" id="button_4">
-    <br/>
-    <button id="full-screen" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"><i class="material-icons">launch</i></button>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <span id="room_name" class="mdl-layout__title">&nbsp;</span>
+          <div class="mdl-layout-spacer"></div>
+          <span id="clock" class="mdl-layout__title">&nbsp;</span>
+        </div>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout__title">Meeting Rooms</span>
+        <nav class="mdl-navigation">
+          <% @resources.items.each do |resource|%>
+            <%if resource.resource_type== 'room' %>
+              <%= %Q(<a class="mdl-navigation__link" href="/calendar/#{resource.resource_email}">#{resource.resource_name}</a>) %>
+              <br>
+            <%end%>
+          <%end%>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="mdl-grid">
+          <div id="current-meeting" class="mdl-cell mdl-cell--6-col">
+            <h1><div id="current_event">&nbsp;</div></h1>
+            <br>
+            <h3><div id="remaining">&nbsp;</div></h3>
+          </div>
+          <div class="mdl-cell mdl-cell--6-col">
+            <h4>
+              <div id="next_events">&nbsp;</div>
+            </h4>
+          </div>
+        </div>
+      </main>
+      <button id="full-screen" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"><i class="material-icons">fullscreen</i></button>
+    </div>
   </body>
+</html>
