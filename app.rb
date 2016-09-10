@@ -14,6 +14,10 @@ set :sockets, Hash.new([])
 
 Dotenv.load
 
+use Rack::Auth::Basic, "Restricted Area" do |username, password|
+  username == ENV['MRD_USER'] and password == ENV['MRD_PASSWORD']
+end
+
 def credentials_for(scope)
   ServiceAccountCredentials.new( json_key_file: ENV['MRD_JSON_KEY'],
                                  person: ENV['MRD_PERSON'],
