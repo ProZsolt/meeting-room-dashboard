@@ -1,6 +1,0 @@
-<% @resources.items.each do |resource|%>
-  <%if resource.resource_type== 'room' %>
-    <%= %Q(<a href="/calendar/#{resource.resource_email}">#{resource.resource_name}</a>) %>
-    <br>
-  <%end%>
-<%end%>
