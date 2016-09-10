@@ -1,48 +1,43 @@
-var json = "";
+var DOMElements = {};
 
-function update(){
+document.addEventListener('DOMContentLoaded', function() {
+  DOMElements = {
+    clock: document.getElementById("clock"),
+    roomName: document.getElementById("room_name"),
+    nextEvents: document.getElementById("next_events"),
+    currentEvent: document.getElementById("current_event"),
+    remaining: document.getElementById("remaining"),
+    fullscreen: document.getElementById('full-screen')
+  };
+
+  pageSetup();
   updateClock();
-  if(json != ""){
-    updateEvents();
-  }
-}
+});
 
-function updateEvents(){
+function updateEvents(json){
   var now = new Date();
-  var events = json["events"];
-  while (events.length > 0 && parseGoogleDate(events[0]["end"]) < now){
+  var events = json.events;
+  while (events.length > 0 && parseGoogleDate(events[0].end) < now){
     events.shift();
   }
-  if(events.length == 0){
+  if(events.length === 0){
     updateCurrentEvent({"name": "Available", "end": "nil"});
     updateNextEvents([]);
-  }else if(parseGoogleDate(events[0]["start"]) < now){
+  }else if(parseGoogleDate(events[0].start) < now){
     updateCurrentEvent(events[0]);
     updateNextEvents(events.slice(1, events.length));
   }else{
-    updateCurrentEvent({"name": "Available", "end": events[0]["start"]});
+    updateCurrentEvent({"name": "Available", "end": events[0].start});
     updateNextEvents(events);
   }
 }
 
 function updateRoomName(roomName){
-  document.getElementById("room_name").innerHTML = roomName;
+  DOMElements.roomName.innerText = roomName;
 }
 
 function parseGoogleDate(d) {
-  var googleDate = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([+-]\d{2}):(\d{2})$/;
-  var m = googleDate.exec(d);
-  var year   = +m[1];
-  var month  = +m[2];
-  var day    = +m[3];
-  var hour   = +m[4];
-  var minute = +m[5];
-  var second = +m[6];
-  var tzHour = +m[7];
-  var tzMin  = +m[8];
-  var tzOffset = new Date().getTimezoneOffset() + tzHour * 60 + tzMin;
-
-  return new Date(year, month - 1, day, hour, minute - tzOffset, second);
+  return new Date(Date.parse(d));
 }
 
 function timeStringFromDateTime(dateTime){
@@ -57,31 +52,36 @@ function timeStringFromDateTime(dateTime){
 }
 
 function updateNextEvents(nextEvents){
-  var string = "";
+  var lines = [];
   nextEvents.forEach(function(event) {
-    var name = event["name"];
-    var start = parseGoogleDate(event["start"]);
-    var end = parseGoogleDate(event["end"]);
-    string = string
-      + timeStringFromDateTime(start)
-      + " - "
-      + timeStringFromDateTime(end)
-      + "<br>"
-      + name
-      + "<br>";
+    var name = event.name;
+    var start = parseGoogleDate(event.start);
+    var end = parseGoogleDate(event.end);
+    lines.push([
+      timeStringFromDateTime(start),
+      " - ",
+      timeStringFromDateTime(end),
+      "<br>",
+      name
+    ].join(''));
   });
-  document.getElementById("next_events").innerHTML = string;
+  DOMElements.nextEvents.innerHTML = lines.join('<br />');
 }
 
+var timeoutLock = false;
 function updateCurrentEvent(currentEvent){
-  document.getElementById("current_event").innerHTML = currentEvent["name"];
+  if (timeoutLock) {
+    clearTimeout(clearTimeout);
+    timeoutLock = false;
+  }
+  DOMElements.currentEvent.innerHTML = currentEvent.name;
   var remainingString = "For";
 
-  if (currentEvent["end"] == "nil"){
+  if (currentEvent.end == "nil"){
     remainingString = remainingString + " the rest of the day";
   } else{
     var start = new Date();
-    var end = parseGoogleDate(currentEvent["end"]);
+    var end = parseGoogleDate(currentEvent.end);
     var remaining = end - start;
     var hours = Math.floor(remaining / 3600000);
     var mins = Math.floor((remaining % 3600000) / 60000);
@@ -104,14 +104,15 @@ function updateCurrentEvent(currentEvent){
     }
   }
   remainingString = remainingString + ".";
-  document.getElementById("remaining").innerHTML = remainingString;
+  DOMElements.remaining.innerHTML = remainingString;
+  timeoutLock = setTimeout(function() { updateCurrentEvent(currentEvent); }, 1000);
 }
 
 function webSocketSetup(){
   function onMessage(data){
     json = JSON.parse(data);
-    updateRoomName(json["room_name"]);
-    updateEvents();
+    updateRoomName(json.room_name);
+    updateEvents(json);
   }
 
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -135,11 +136,11 @@ function webSocketSetup(){
 }
 
 function pageSetup(){
-  webSocketSetup()
+  webSocketSetup();
 
   if (screenfull.enabled) {
-    document.getElementById('full-screen').addEventListener('click', () => {
-      screenfull.request()
+    DOMElements.fullscreen.addEventListener('click', function () {
+      screenfull.request();
     });
 
     document.addEventListener(screenfull.raw.fullscreenchange, fullscreenChange);
@@ -148,13 +149,13 @@ function pageSetup(){
 
 function fullscreenChange() {
   if(screenfull.isFullscreen) {
-    document.getElementById('full-screen').style.visibility = 'hidden';
+    DOMElements.fullscreen.style.visibility = 'hidden';
   } else {
-    document.getElementById('full-screen').style.visibility = 'visible';
+    DOMElements.fullscreen.style.visibility = 'visible';
   }
 }
 
 function updateClock(){
-  var currentTime = new Date();
-  document.getElementById("clock").innerHTML = timeStringFromDateTime(currentTime);
+  DOMElements.clock.innerText = timeStringFromDateTime(new Date());
+  setTimeout(updateClock, 1000);
 }
