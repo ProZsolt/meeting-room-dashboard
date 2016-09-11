@@ -5,9 +5,10 @@ require 'google/apis/calendar_v3'
 require 'google/apis/admin_directory_v1'
 require 'json'
 require 'dotenv'
+require 'rufus/scheduler'
 require_relative 'helpers/service_account_credentials.rb'
 
-LOGIN_URL = '/'
+
 
 set :server, 'thin'
 set :sockets, Hash.new([])
@@ -16,6 +17,10 @@ Dotenv.load
 
 use Rack::Auth::Basic, "Restricted Area" do |username, password|
   username == ENV['MRD_USER'] and password == ENV['MRD_PASSWORD']
+end
+
+Rufus::Scheduler.new.cron '5 0 * * *' do
+  refresh_all
 end
 
 def credentials_for(scope)
@@ -69,6 +74,13 @@ def get_resources
   direcrory = Google::Apis::AdminDirectoryV1::DirectoryService.new
   direcrory.authorization = credentials_for Google::Apis::AdminDirectoryV1::AUTH_ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY
   direcrory.list_calendar_resources('my_customer')
+end
+
+def refresh_all
+  settings.sockets.each do |calendar_id, sockets|
+    events = get_events(calendar_id)
+    EM.next_tick{ sockets.each{|s| s.send(events)} }
+  end
 end
 
 get '/' do
