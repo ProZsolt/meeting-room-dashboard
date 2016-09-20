@@ -43,12 +43,15 @@ class MeetingRoomDashboard < Sinatra::Base
                                    time_min: day_start.rfc3339,
                                    time_max: day_end.rfc3339,
                                    time_zone: 'Europe/Budapest',
-                                   fields: 'items(summary,start,end),summary')
+                                   fields: 'items(summary,start,end,attendees),summary')
     events = g_events.items.map do |event|
       {
         name: event.summary,
         start: event.start.date_time,
-        end: event.end.date_time
+        end: event.end.date_time,
+        attendees: event.attendees.reject(&:resource).map do |attendee|
+          attendee.display_name ? attendee.display_name : attendee.email
+        end
       }
     end
     calendar_name = g_events.summary

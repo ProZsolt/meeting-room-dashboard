@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     nextEvents: document.getElementById("next_events"),
     currentEvent: document.getElementById("current_event"),
     remaining: document.getElementById("remaining"),
-    fullscreen: document.getElementById('full-screen')
+    fullscreen: document.getElementById('full-screen'),
+    attendees: document.getElementById('attendees')
   };
 
   pageSetup();
@@ -106,6 +107,8 @@ function updateCurrentEvent(currentEvent){
   }
   remainingString = remainingString + ".";
   DOMElements.remaining.innerHTML = remainingString;
+
+  DOMElements.attendees.innerHTML = currentEvent.attendees.join('<br />')
 }
 
 function webSocketSetup(){
