@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updateClock();
 });
 
+var timeoutLock = false;
 function updateEvents(json){
   var now = new Date();
   var events = json.events;
@@ -30,6 +31,7 @@ function updateEvents(json){
     updateCurrentEvent({"name": "Available", "end": events[0].start});
     updateNextEvents(events);
   }
+  timeoutLock = setTimeout(function() { updateEvents(json); }, 1000);
 }
 
 function updateRoomName(roomName){
@@ -68,7 +70,6 @@ function updateNextEvents(nextEvents){
   DOMElements.nextEvents.innerHTML = lines.join('<br />');
 }
 
-var timeoutLock = false;
 function updateCurrentEvent(currentEvent){
   if (timeoutLock) {
     clearTimeout(clearTimeout);
@@ -105,7 +106,6 @@ function updateCurrentEvent(currentEvent){
   }
   remainingString = remainingString + ".";
   DOMElements.remaining.innerHTML = remainingString;
-  timeoutLock = setTimeout(function() { updateCurrentEvent(currentEvent); }, 1000);
 }
 
 function webSocketSetup(){
