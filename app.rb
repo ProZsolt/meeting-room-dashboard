@@ -33,8 +33,8 @@ class MeetingRoomDashboard < Sinatra::Base
   end
 
   def get_events(calendar_id)
-    day_start = (Date.today)
-    day_end = (Date.today+1)
+    day_start = Date.today
+    day_end = Date.today.next_day
     calendar = Google::Apis::CalendarV3::CalendarService.new
     calendar.authorization = credentials_for Google::Apis::CalendarV3::AUTH_CALENDAR
     g_events = calendar.list_events(calendar_id,
@@ -50,7 +50,7 @@ class MeetingRoomDashboard < Sinatra::Base
         start: event.start.date_time,
         end: event.end.date_time,
         attendees: event.attendees.reject(&:resource).map do |attendee|
-          attendee.display_name ? attendee.display_name : attendee.email
+          attendee.display_name || attendee.email
         end
       }
     end
