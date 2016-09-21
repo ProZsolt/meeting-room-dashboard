@@ -23,13 +23,13 @@ function updateEvents(json){
     events.shift();
   }
   if(events.length === 0){
-    updateCurrentEvent({"name": "Available", "end": "nil"});
+    updateCurrentEvent({"name": "Available", "end": "nil", "attendees": []});
     updateNextEvents([]);
   }else if(parseGoogleDate(events[0].start) < now){
     updateCurrentEvent(events[0]);
     updateNextEvents(events.slice(1, events.length));
   }else{
-    updateCurrentEvent({"name": "Available", "end": events[0].start});
+    updateCurrentEvent({"name": "Available", "end": events[0].start, "attendees": []});
     updateNextEvents(events);
   }
   timeoutLock = setTimeout(function() { updateEvents(json); }, 1000);
@@ -107,8 +107,7 @@ function updateCurrentEvent(currentEvent){
   }
   remainingString = remainingString + ".";
   DOMElements.remaining.innerHTML = remainingString;
-
-  DOMElements.attendees.innerHTML = currentEvent.attendees.join('<br />')
+  DOMElements.attendees.innerHTML = currentEvent.attendees.join('<br />') || "&nbsp";
 }
 
 function webSocketSetup(){
