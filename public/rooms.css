@@ -1,0 +1,9 @@
+.mdl-layout__header-row {
+  padding-left: 24px !important;
+}
+
+.mdl-navigation {
+      flex-direction: column;
+      align-items: stretch;
+      padding-top: 16px;
+}

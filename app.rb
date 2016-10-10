@@ -109,7 +109,7 @@ class MeetingRoomDashboard < Sinatra::Base
 
   get '/' do
     @resources = get_resources
-    erb :dashboard
+    erb :rooms
   end
 
   get '/calendar/:calendar_id' do |calendar_id|

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Meeting Room Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.blue-red.min.css">
+    <link rel="stylesheet" type="text/css" href="../rooms.css">
+    <script src="https://code.getmdl.io/1.2.1/material.min.js"></script>
+  </head>
+  <body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout__title">Meeting Rooms</span>
+        </div>
+      </header>
+      <main class="mdl-layout__content">
+        <div class="mdl-grid">
+          <div id="rooms" class="mdl-cell mdl-cell--12-col">
+            <nav class="mdl-navigation">
+              <% @resources.items.each do |resource|%>
+                <%if resource.resource_type== 'room' %>
+                  <%= %Q(<a class="mdl-navigation__link" href="/calendar/#{resource.resource_email}">#{resource.resource_name}</a>) %>
+                  <br>
+                <%end%>
+              <%end%>
+            </nav>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
