@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 var timeoutLock = false;
 function updateEvents(json){
+  if (timeoutLock) {
+    clearTimeout(timeoutLock);
+    timeoutLock = false;
+  }
   var now = new Date();
   var events = json.events;
   while (events.length > 0 && parseGoogleDate(events[0].end) < now){
@@ -72,10 +76,6 @@ function updateNextEvents(nextEvents){
 }
 
 function updateCurrentEvent(currentEvent){
-  if (timeoutLock) {
-    clearTimeout(clearTimeout);
-    timeoutLock = false;
-  }
   DOMElements.currentEvent.innerHTML = currentEvent.name;
   var remainingString = "For";
 
@@ -124,17 +124,19 @@ function webSocketSetup(){
   ws.onclose   = function(){};
   ws.onmessage = function(message){onMessage(message.data);};
 
-  // var sender = function(f){
-  //   f.onclick    = function(){
-  //     ws.send(f.getAttribute("data-duration"));
-  //     return false;
-  //   }
-  // };
-  // sender(document.getElementById('button_1'))
-  // sender(document.getElementById('button_2'))
-  // sender(document.getElementById('button_3'))
-  // sender(document.getElementById('button_4'))
+  var sender = function(f){
+    f.onclick    = function(){
+      var layout = document.querySelector('.mdl-layout');
+      layout.MaterialLayout.toggleDrawer();
+      ws.send(f.getAttribute("data-duration"));
+      return false;
+    }
+  };
 
+  var buttons = document.getElementsByClassName('reserve-button');
+  for(var i = 0; i < buttons.length; i++){
+     sender(buttons.item(i));
+  }
 }
 
 function pageSetup(){
