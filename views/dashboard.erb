@@ -22,14 +22,11 @@
         </div>
       </header>
       <div class="mdl-layout__drawer">
-        <span class="mdl-layout__title">Meeting Rooms</span>
+        <span class="mdl-layout__title">Reserve room</span>
         <nav class="mdl-navigation">
-          <% @resources.items.each do |resource|%>
-            <%if resource.resource_type== 'room' %>
-              <%= %Q(<a class="mdl-navigation__link" href="/calendar/#{resource.resource_email}">#{resource.resource_name}</a>) %>
-              <br>
-            <%end%>
-          <%end%>
+          <a class="mdl-navigation__link reserve-button" href="#" data-duration="15">15 minutes</a>
+          <a class="mdl-navigation__link reserve-button" href="#" data-duration="30">30 minutes</a>
+          <a class="mdl-navigation__link reserve-button" href="#" data-duration="60">1 hour</a>
         </nav>
       </div>
       <main class="mdl-layout__content">
