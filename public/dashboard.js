@@ -121,7 +121,9 @@ function webSocketSetup(){
 
   var ws       = new WebSocket(protocol + '://' + window.location.host + window.location.pathname);
   ws.onopen    = function(){};
-  ws.onclose   = function(){};
+  ws.onclose   = function(){
+    document.querySelector('dialog').showModal();
+  };
   ws.onmessage = function(message){onMessage(message.data);};
 
   var sender = function(f){
@@ -141,6 +143,7 @@ function webSocketSetup(){
 
 function pageSetup(){
   webSocketSetup();
+  refreshDialogSetup();
 
   if (screenfull.enabled) {
     DOMElements.fullscreen.addEventListener('click', function () {
@@ -158,7 +161,15 @@ function fullscreenChange() {
     DOMElements.fullscreen.style.visibility = 'visible';
   }
 }
-
+function refreshDialogSetup() {
+  var dialog = document.querySelector('dialog');
+  if (! dialog.showModal) {
+    dialogPolyfill.registerDialog(dialog);
+  }
+  dialog.querySelector('.refresh').addEventListener('click', function() {
+    window.location.reload();
+  });
+}
 function updateClock(){
   DOMElements.clock.innerText = timeStringFromDateTime(new Date());
   setTimeout(updateClock, 1000);
