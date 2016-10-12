@@ -127,12 +127,12 @@ function webSocketSetup(){
   ws.onmessage = function(message){onMessage(message.data);};
 
   var sender = function(f){
-    f.onclick    = function(){
+    f.addEventListener('click', function(){
       var layout = document.querySelector('.mdl-layout');
       layout.MaterialLayout.toggleDrawer();
       ws.send(f.getAttribute("data-duration"));
       return false;
-    }
+    });
   };
 
   var buttons = document.getElementsByClassName('reserve-button');
