@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'sinatra/base'
-require 'sinatra-websocket'
+require 'faye/websocket'
 require 'google/apis/calendar_v3'
 require 'google/apis/admin_directory_v1'
 require 'json'
@@ -115,20 +115,26 @@ class MeetingRoomDashboard < Sinatra::Base
   end
 
   get '/calendar/:calendar_id' do |calendar_id|
-    @resources = get_resources
-    return erb :dashboard unless request.websocket?
-    request.websocket do |ws|
-      ws.onopen do
+    if Faye::WebSocket.websocket?(request.env)
+      ws = Faye::WebSocket.new(request.env)
+
+      ws.on(:open) do |event|
         settings.sockets[calendar_id] += [ws]
-        EM.next_tick{ ws.send(get_events(calendar_id)) }
+        ws.send(get_events(calendar_id))
       end
-      ws.onmessage do |msg|
-        create_event(calendar_id, msg.to_i)
-        EM.next_tick{ ws.send(get_events(calendar_id)) } # @todo remove this after the update hook is done
+
+      ws.on(:message) do |msg|
+        create_event(calendar_id, msg.data.to_i)
+        ws.send(get_events(calendar_id)) # @todo remove this after the update hook is done
       end
-      ws.onclose do
+
+      ws.on(:close) do |event|
         settings.sockets[calendar_id].delete(ws)
       end
+
+      ws.rack_response
+    else
+      erb :dashboard
     end
   end
 

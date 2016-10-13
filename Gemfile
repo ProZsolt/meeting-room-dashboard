@@ -1,6 +1,6 @@
 source 'https://www.rubygems.org'
 
-gem 'sinatra-websocket'
+gem 'faye-websocket'
 gem 'sinatra', '~> 1.4'
 gem 'google-api-client', '~> 0.9'
 gem 'signet', '~> 0.7'
