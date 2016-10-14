@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     currentEvent: document.getElementById("current_event"),
     remaining: document.getElementById("remaining"),
     fullscreen: document.getElementById('full-screen'),
-    attendees: document.getElementById('attendees')
+    attendees: document.getElementById('attendees'),
+    header: document.getElementsByTagName("header")[0]
   };
 
   pageSetup();
@@ -108,6 +109,9 @@ function updateCurrentEvent(currentEvent){
   remainingString = remainingString + ".";
   DOMElements.remaining.innerHTML = remainingString;
   DOMElements.attendees.innerHTML = currentEvent.attendees.join('<br />') || "&nbsp";
+
+  bg_color = currentEvent.name == 'Available' ? 'green' : 'red';
+  updateColorTheme(bg_color);
 }
 
 function webSocketSetup(){
@@ -173,4 +177,43 @@ function refreshDialogSetup() {
 function updateClock(){
   DOMElements.clock.innerText = timeStringFromDateTime(new Date());
   setTimeout(updateClock, 1000);
+}
+
+function updateColorTheme(color) {
+  updateBackgroundColor(color);
+  updateHeaderColor(color);
+}
+
+function updateBackgroundColor(color){
+  setColor(document.body, {'color' : color, 'opacity' : 0.3});
+}
+
+function updateHeaderColor(color){
+  setColor(DOMElements.header, {'color' : color, 'opacity' : 1});
+}
+
+function setColor(element, color){
+  element.style.backgroundColor = strToRgb(color);
+}
+
+function strToRgb(rgba_info) {
+  if(rgba_info === undefined || rgba_info === null) throw 'ArgumentError';
+
+  var rgb;
+  switch(rgba_info.color) {
+    case 'red': {
+      rgb = "255,0,0";
+      break;
+    }
+    case 'green': {
+      rgb = "0,128,0";
+      break
+    }
+    default: {
+      rgb = "0,0,0";
+      break;
+    }
+  }
+
+  return "rgba(" + rgb + "," + rgba_info.opacity + ")";
 }
