@@ -17,10 +17,6 @@ class MeetingRoomDashboard < Sinatra::Base
 
   set :domain, ENV['MRD_DOMAIN']
 
-  use Rack::Auth::Basic, "Restricted Area" do |username, password|
-    username == ENV['MRD_USER'] and password == ENV['MRD_PASSWORD']
-  end
-
   Rufus::Scheduler.new.cron '5 0 * * *' do
     refresh_all
   end
