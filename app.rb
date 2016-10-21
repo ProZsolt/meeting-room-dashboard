@@ -134,8 +134,9 @@ class MeetingRoomDashboard < Sinatra::Base
     end
   end
 
-  get '/refresh/:calendar_id' do |calendar_id|
-    events = get_events(calendar_id)
-    EM.next_tick{ settings.sockets[calendar_id].each{|s| s.send(events)} }
+  post '/notifications' do
+    puts 'New notification:'
+    puts request.env.select { |k, v| k[/^HTTP_X_GOOG/]}
+    'OK'
   end
 end
