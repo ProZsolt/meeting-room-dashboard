@@ -10,15 +10,23 @@ require_relative 'helpers/service_account_credentials.rb'
 
 
 class MeetingRoomDashboard < Sinatra::Base
-  set :server, 'thin'
-  set :sockets, Hash.new([])
+  configure do
+    Dotenv.load
+    set :calendars, Array.new
+    set :domain, ENV['MRD_DOMAIN']
+    set :token, ENV['MRD_TOKEN']
 
-  Dotenv.load
-
-  set :domain, ENV['MRD_DOMAIN']
-
-  Rufus::Scheduler.new.cron '5 0 * * *' do
-    refresh_all
+    Rufus::Scheduler.new.cron '5 0 * * *' do
+      settings.calendars.each do |calendar|
+        events = get_events(calendar[:calendar_id])
+        calendar[:sockets].each do |socket|
+          socket.send(events)
+        end
+        if calendar[:channel].expiration.to_i/1000 - Time.now.to_i < 86400
+          calendar[:channel] = watch_calendar(calendar[:calendar_id])
+        end
+      end
+    end
   end
 
   def credentials_for(scope)
@@ -82,27 +90,13 @@ class MeetingRoomDashboard < Sinatra::Base
   def watch_calendar(calendar_id)
     channel = Google::Apis::CalendarV3::Channel.new(
       id: SecureRandom.uuid,
-      address: "https://#{settings.domain}/refresh/#{calendar_id}",
-      token: 'ThisIsAValidMessage',
+      address: "https://#{settings.domain}/notifications",
+      token: settings.token,
       type: 'web_hook',
-      #expiration: ''
     )
     calendar = Google::Apis::CalendarV3::CalendarService.new
     calendar.authorization = credentials_for Google::Apis::CalendarV3::AUTH_CALENDAR
     calendar.watch_event(calendar_id, channel)
-  end
-
-  def watch_all
-    get_resources.items.each do |resource|
-      watch_calendar resource.resource_email
-    end
-  end
-
-  def refresh_all
-    settings.sockets.each do |calendar_id, sockets|
-      events = get_events(calendar_id)
-      EM.next_tick{ sockets.each{|s| s.send(events)} }
-    end
   end
 
   get '/' do
@@ -115,17 +109,27 @@ class MeetingRoomDashboard < Sinatra::Base
       ws = Faye::WebSocket.new(request.env)
 
       ws.on(:open) do |event|
-        settings.sockets[calendar_id] += [ws]
+        calendar = settings.calendars.find{ |calendar| calendar[:calendar_id] == calendar_id}
+        if calendar
+          calendar[:sockets] << ws
+        else
+          calendar = {
+            calendar_id: calendar_id,
+            sockets: [ws],
+            channel: watch_calendar(calendar_id)
+          }
+          settings.calendars << calendar
+        end
         ws.send(get_events(calendar_id))
       end
 
       ws.on(:message) do |msg|
         create_event(calendar_id, msg.data.to_i)
-        ws.send(get_events(calendar_id)) # @todo remove this after the update hook is done
       end
 
       ws.on(:close) do |event|
-        settings.sockets[calendar_id].delete(ws)
+        calendar = settings.calendars.find{ |calendar| calendar[:calendar_id] == calendar_id}
+        calendar[:sockets].delete(ws)
       end
 
       ws.rack_response
@@ -135,8 +139,21 @@ class MeetingRoomDashboard < Sinatra::Base
   end
 
   post '/notifications' do
-    puts 'New notification:'
-    puts request.env.select { |k, v| k[/^HTTP_X_GOOG/]}
-    'OK'
+    if request.env['HTTP_X_GOOG_CHANNEL_TOKEN'] == settings.token
+      if request.env['HTTP_X_GOOG_RESOURCE_STATE'] == 'exists'
+        channel_id = request.env['HTTP_X_GOOG_CHANNEL_ID']
+        calendar = settings.calendars.find{ |calendar| calendar[:channel].id == channel_id}
+        if calendar
+          events = get_events(calendar[:calendar_id])
+          calendar[:sockets].each do |socket|
+            socket.send(events)
+          end
+        end
+      end
+      'OK'
+    else
+      status 401
+      body '401 Unauthorized'
+    end
   end
 end
