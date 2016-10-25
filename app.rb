@@ -15,18 +15,6 @@ class MeetingRoomDashboard < Sinatra::Base
     set :calendars, Array.new
     set :domain, ENV['MRD_DOMAIN']
     set :token, ENV['MRD_TOKEN']
-
-    Rufus::Scheduler.new.cron '5 0 * * *' do
-      settings.calendars.each do |calendar|
-        events = get_events(calendar[:calendar_id])
-        calendar[:sockets].each do |socket|
-          socket.send(events)
-        end
-        if calendar[:channel].expiration.to_i/1000 - Time.now.to_i < 86400
-          calendar[:channel] = watch_calendar(calendar[:calendar_id])
-        end
-      end
-    end
   end
 
   def credentials_for(scope)
@@ -97,6 +85,23 @@ class MeetingRoomDashboard < Sinatra::Base
     calendar = Google::Apis::CalendarV3::CalendarService.new
     calendar.authorization = credentials_for Google::Apis::CalendarV3::AUTH_CALENDAR
     calendar.watch_event(calendar_id, channel)
+  end
+
+  def daily_refresh
+    settings.calendars.each do |calendar|
+      events = get_events(calendar[:calendar_id])
+      calendar[:sockets].each do |socket|
+        socket.send(events)
+      end
+      if calendar[:channel].expiration.to_i/1000 - Time.now.to_i < 86400
+        calendar[:channel] = watch_calendar(calendar[:calendar_id])
+      end
+    end
+  end
+
+  get '/daily_refresh' do
+    daily_refresh
+    'OK'
   end
 
   get '/' do
