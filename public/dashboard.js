@@ -126,6 +126,7 @@ function webSocketSetup(){
   var ws       = new WebSocket(protocol + '://' + window.location.host + window.location.pathname);
   ws.onopen    = function(){};
   ws.onclose   = function(){
+    setTimeout(function(){webSocketSetup()}, 5000);
     document.querySelector('dialog').showModal();
   };
   ws.onmessage = function(message){onMessage(message.data);};
